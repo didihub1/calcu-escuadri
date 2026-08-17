@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Calculadora Escuadrías de Madera</title>
+<style>
+  body { 
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; 
+    background-color: #ffffff; 
+    color: #37352f; 
+    display: flex; 
+    justify-content: center; 
+    padding: 20px;
+  }
+  .widget-container { 
+    border: 1px solid #e1e4e8; 
+    padding: 20px; 
+    border-radius: 8px; 
+    width: 100%; 
+    max-width: 400px; 
+    background-color: #f9f9f9; 
+    box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+  }
+  h3 { text-align: center; margin-top: 0; font-size: 1.2em; border-bottom: 1px solid #ccc; padding-bottom: 10px; }
+  .control-group { display: flex; justify-content: space-between; margin-bottom: 15px; }
+  label { font-size: 0.9em; font-weight: bold; width: 48%; }
+  select { width: 100%; padding: 6px; margin-top: 5px; border-radius: 4px; border: 1px solid #ccc; }
+  .result { text-align: center; font-size: 1.1em; font-weight: bold; color: #2c3e50; padding: 10px; background-color: #e8f4f8; border-radius: 4px; border: 1px solid #bce0fd; margin-bottom: 15px; }
+  .canvas-container { display: flex; justify-content: center; align-items: center; height: 180px; background-color: #fff; border: 1px dashed #bdc3c7; border-radius: 4px; }
+  .leyenda { font-size: 0.75em; color: #7f8c8d; text-align: center; margin-top: 10px; }
+  .box-leyenda { display: inline-block; width: 10px; height: 10px; margin-right: 5px; vertical-align: middle; }
+</style>
+</head>
+<body>
+
+  <div class="widget-container">
+    <h3>Conversor Bruto a Cepillado</h3>
+    
+    <div class="control-group">
+      <label>Espesor Nominal:<br>
+        <select id="espesor">
+          <option value="21">1"</option>
+          <option value="32">1.5"</option>
+          <option value="41" selected>2"</option>
+          <option value="65">3"</option>
+          <option value="90">4"</option>
+        </select>
+      </label>
+      <label>Ancho Nominal:<br>
+        <select id="ancho">
+          <option value="41">2"</option>
+          <option value="65">3"</option>
+          <option value="90" selected>4"</option>
+          <option value="115">5"</option>
+          <option value="140">6"</option>
+          <option value="190">8"</option>
+          <option value="240">10"</option>
+        </select>
+      </label>
+    </div>
+
+    <div class="result" id="resultado">Real Cepillado: 41 x 90 mm</div>
+
+    <div class="canvas-container">
+      <canvas id="grafico" width="280" height="160"></canvas>
+    </div>
+    
+    <div class="leyenda">
+      <span class="box-leyenda" style="border: 1.5px dashed #c0392b;"></span> Madera en Bruto nominal<br>
+      <span class="box-leyenda" style="background-color: #d35400;"></span> Madera Cepillada real en obra
+    </div>
+  </div>
+
+  <script>
+    const espesorSelect = document.getElementById('espesor');
+    const anchoSelect = document.getElementById('ancho');
+    const resultado = document.getElementById('resultado');
+    const canvas = document.getElementById('grafico');
+    const ctx = canvas.getContext('2d');
+
+    function dibujarSeccion() {
+      const espCep = parseInt(espesorSelect.value);
+      const anchCep = parseInt(anchoSelect.value);
+      
+      const espNomIn = parseFloat(espesorSelect.options[espesorSelect.selectedIndex].text.replace('"',''));
+      const anchNomIn = parseFloat(anchoSelect.options[anchoSelect.selectedIndex].text.replace('"',''));
+      
+      const espBrutoMm = espNomIn * 25.4;
+      const anchBrutoMm = anchNomIn * 25.4;
+
+      resultado.textContent = `Real Cepillado: ${espCep} x ${anchCep} mm`;
+
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      const scale = Math.min((canvas.width - 20) / 260, (canvas.height - 20) / 260); 
+
+      const wB = anchBrutoMm * scale;
+      const hB = espBrutoMm * scale;
+      const wC = anchCep * scale;
+      const hC = espCep * scale;
+
+      const cx = canvas.width / 2;
+      const cy = canvas.height / 2;
+
+      // Dibujar área Bruta (Línea punteada roja)
+      ctx.strokeStyle = '#c0392b';
+      ctx.setLineDash([5, 4]);
+      ctx.lineWidth = 1.5;
+      ctx.strokeRect(cx - wB/2, cy - hB/2, wB, hB);
+
+      // Dibujar área Cepillada (Relleno madera)
+      ctx.fillStyle = '#d35400';
+      ctx.setLineDash([]);
+      ctx.fillRect(cx - wC/2, cy - hC/2, wC, hC);
+      
+      // Borde del cepillado
+      ctx.strokeStyle = '#8e44ad';
+      ctx.lineWidth = 1;
+      ctx.strokeRect(cx - wC/2, cy - hC/2, wC, hC);
+    }
+
+    espesorSelect.addEventListener('change', dibujarSeccion);
+    anchoSelect.addEventListener('change', dibujarSeccion);
+    dibujarSeccion(); // Dibujo inicial
+  </script>
+</body>
+</html>
